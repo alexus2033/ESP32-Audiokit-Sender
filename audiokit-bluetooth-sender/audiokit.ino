@@ -29,11 +29,23 @@ void btnPrevious(bool, int, void*) {
   player.previous();
 }
 
-void btnSkip(bool pinStatus, int, void*) {
+void btnSkip(bool, int, void*) {
   if(!bt_connected) return;
-  debug(pinStatus);
-  debugln(" Skip frames");
+  debugln("Skip frames");
   source.seek(4096);
+}
+
+void ReadFileName(){
+  playerIDX = source.index();
+  char* path = (char*)source.toStr();
+  char delimiter[] = "/";
+  char* ptr = strtok(path, delimiter);
+  while(ptr != NULL)
+  { //extract FileName from Path
+    snprintf(displayName, sizeof(displayName), "%d: %s", playerIDX+1, ptr);
+    ptr = strtok(NULL, delimiter);
+  }
+  Serial.println(displayName);
 }
 
 void blinkLED(){

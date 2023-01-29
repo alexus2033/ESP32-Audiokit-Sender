@@ -36,10 +36,12 @@ const char* device = "Supergroove";
 int ledPin = 0;
 bool bt_connected = false;
 bool blinker = false;
+int playerIDX = -1;
 unsigned long ledTimer = 0;
 int buffer_count = 30;
 int buffer_size = 512;
 
+char displayName[50];
 const char *startFilePath="/";
 const char* ext="mp3";
 AudioKitStream kit;
@@ -72,7 +74,7 @@ void setup() {
  out.begin();
 
  // setup player
- player.setDelayIfOutputFull(0);
+ player.setDelayIfOutputFull(10);
  player.setMetadataCallback(player_metadata_callback);
  player.setVolume(0.5);
  player.begin();
@@ -99,12 +101,15 @@ void setup() {
  }
 }
 
+///  MAIN LOOP  ///
 void loop() {
- player.copy();
- kit.processActions();
- if(bt_connected == false){
-  blinkLED();
- }
+  player.copy();
+  kit.processActions();
+  if(!bt_connected){
+    blinkLED();
+  } else if(playerIDX != source.index()){
+    ReadFileName(); //title changed
+  }
 }
 
 void connection_state_changed(esp_a2d_connection_state_t state, void *ptr){
