@@ -41,7 +41,7 @@ unsigned long ledTimer = 0;
 int buffer_count = 30;
 int buffer_size = 512;
 
-char displayName[50];
+char displayName[60];
 const char *startFilePath="/";
 const char* ext="mp3";
 AudioKitStream kit;
@@ -64,41 +64,41 @@ int32_t get_data(uint8_t *data, int32_t bytes) {
 }
 
 void setup() {
- Serial.begin(115200);
- AudioLogger::instance().begin(Serial, AudioLogger::Warning);
+  Serial.begin(115200);
+  AudioLogger::instance().begin(Serial, AudioLogger::Warning);
 
- //test
- decoder.setFilterMetaData(true);
+  //test
+  decoder.setFilterMetaData(true);
 
- // start QueueStream
- out.begin();
+  // start QueueStream
+  out.begin();
 
- // setup player
- player.setDelayIfOutputFull(10);
- player.setMetadataCallback(player_metadata_callback);
- player.setVolume(0.5);
- player.begin();
- 
- // fill buffer with some data
- player.getStreamCopy().copyN(5); 
+  // setup player
+  player.setDelayIfOutputFull(10);
+  player.setMetadataCallback(player_metadata_callback);
+  player.setVolume(0.5);
+  player.begin();
 
- kit.addAction(PIN_KEY1, btnStopResume);
- // kit.addAction(PIN_KEY2, previous); //GPIO 19, unstable
- kit.addAction(PIN_KEY3, btnSkip);
- kit.addAction(PIN_KEY4, btnNext);
+  // fill buffer with some data
+  player.getStreamCopy().copyN(5); 
 
- // start a2dp source
- Serial.println("starting A2DP...");
- a2dp.set_local_name(device); 
- a2dp.set_on_connection_state_changed(connection_state_changed);
- a2dp.start_raw(get_data);  
- Serial.println("Started!");
-
- ledPin = kit.pinGreenLed();
- if(ledPin>0){
-     pinMode(ledPin, OUTPUT);
-     digitalWrite(ledPin, LOW);
- }
+  kit.addAction(PIN_KEY1, btnStopResume);
+  // kit.addAction(PIN_KEY2, previous); //GPIO 19, unstable
+  kit.addAction(PIN_KEY3, btnSkip);
+  kit.addAction(PIN_KEY4, btnNext);
+  ledPin = kit.pinGreenLed();
+  if(ledPin>0){
+      pinMode(ledPin, OUTPUT);
+      digitalWrite(ledPin, LOW);
+  }
+  if(SDCard_Available){
+    // start a2dp source
+    Serial.println("starting A2DP...");
+    a2dp.set_local_name(device); 
+    a2dp.set_on_connection_state_changed(connection_state_changed);
+    a2dp.start_raw(get_data);  
+    Serial.println("Started!");
+  }
 }
 
 ///  MAIN LOOP  ///
@@ -118,6 +118,7 @@ void connection_state_changed(esp_a2d_connection_state_t state, void *ptr){
     bt_connected = true;
     if (!player.isActive()){
       player.play();
+      ReadFileName();
     }
     if(ledPin>0){
       digitalWrite(ledPin,HIGH);
