@@ -67,14 +67,14 @@ void setup() {
   Serial.begin(115200);
   AudioLogger::instance().begin(Serial, AudioLogger::Warning);
 
-  //test
-  decoder.setFilterMetaData(true);
+  // setup I2S based on sampling rate provided by decoder
+  decoder.setNotifyAudioChange(kit);
 
   // start QueueStream
   out.begin();
 
   // setup player
-  player.setDelayIfOutputFull(10);
+  player.setDelayIfOutputFull(0);
   player.setMetadataCallback(player_metadata_callback);
   player.setVolume(0.5);
   player.begin();
@@ -84,21 +84,24 @@ void setup() {
 
   kit.addAction(PIN_KEY1, btnStopResume);
   // kit.addAction(PIN_KEY2, previous); //GPIO 19, unstable
-  kit.addAction(PIN_KEY3, btnSkip);
-  kit.addAction(PIN_KEY4, btnNext);
+  kit.addAction(PIN_KEY3, btnPrevious);
+  kit.addAction(PIN_KEY4, btnRewind);
+  kit.addAction(PIN_KEY5, btnForward);
+  kit.addAction(PIN_KEY6, btnNext);
   ledPin = kit.pinGreenLed();
   if(ledPin>0){
       pinMode(ledPin, OUTPUT);
-      digitalWrite(ledPin, LOW);
+      digitalWrite(ledPin, LOW); //inverted output
   }
-  if(SDCard_Available){
-    // start a2dp source
-    Serial.println("starting A2DP...");
-    a2dp.set_local_name(device); 
-    a2dp.set_on_connection_state_changed(connection_state_changed);
-    a2dp.start_raw(get_data);  
-    Serial.println("Started!");
+  while(!SDCard_Available){
+    delay(1000);
   }
+  // start a2dp source
+  Serial.println("starting A2DP...");
+  a2dp.set_local_name(device); 
+  a2dp.set_on_connection_state_changed(connection_state_changed);
+  a2dp.start_raw(get_data);  
+  Serial.println("Started");
 }
 
 ///  MAIN LOOP  ///

@@ -1,10 +1,10 @@
 bool SDCard_Available(){
   int detectSDPin = SD_CARD_INTR_GPIO;
-  if(detectSDPin>0 && digitalRead(detectSDPin) == 0){
+  if(detectSDPin > 0 && digitalRead(detectSDPin) == 0){
     return true;
   }
   Serial.println("Please insert SD-Card");
-  if(ledPin>0)
+  if(ledPin > 0)
     digitalWrite(ledPin,LOW);
   return false;
 }
@@ -29,10 +29,15 @@ void btnPrevious(bool, int, void*) {
   player.previous();
 }
 
-void btnSkip(bool, int, void*) {
+void btnForward(bool, int, void*) {
   if(!bt_connected) return;
-  debugln("Skip frames");
+  debugln("Skip+");
   source.seek(4096);
+}
+
+void btnRewind(bool, int, void*) {
+  debugln("Skip-");
+  source.seek(-4096);
 }
 
 void ReadFileName(){
@@ -46,6 +51,10 @@ void ReadFileName(){
     ptr = strtok(NULL, delimiter);
   }
   Serial.println(displayName);
+  auto info = decoder.audioInfo();
+  Serial.printf("%d channels, ", info.channels);
+  Serial.printf("%d bits per sample, ", info.bits_per_sample);
+  Serial.printf("sample rate: %d ", info.sample_rate);
 }
 
 void blinkLED(){
