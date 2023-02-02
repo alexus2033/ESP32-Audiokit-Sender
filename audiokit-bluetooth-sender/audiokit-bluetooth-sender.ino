@@ -37,7 +37,8 @@ int ledPin = 0;
 bool bt_connected = false;
 bool blinker = false;
 int playerIDX = -1;
-unsigned long ledTimer = 0;
+byte playPos = 0;
+unsigned long dTimer = 0;
 int buffer_count = 30;
 int buffer_size = 512;
 
@@ -111,7 +112,9 @@ void loop() {
   if(!bt_connected){
     blinkLED();
   } else if(playerIDX != source.index()){
-    ReadFileName(); //title changed
+    updateTitleInfo(); //title changed
+  } else {
+    updatePosition();
   }
 }
 
@@ -121,7 +124,6 @@ void connection_state_changed(esp_a2d_connection_state_t state, void *ptr){
     bt_connected = true;
     if (!player.isActive()){
       player.play();
-      ReadFileName();
     }
     if(ledPin>0){
       digitalWrite(ledPin,HIGH);

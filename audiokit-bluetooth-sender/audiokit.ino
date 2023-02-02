@@ -30,7 +30,6 @@ void btnPrevious(bool, int, void*) {
 }
 
 void btnForward(bool, int, void*) {
-  if(!bt_connected) return;
   debugln("Skip+");
   source.seek(4096);
 }
@@ -40,7 +39,8 @@ void btnRewind(bool, int, void*) {
   source.seek(-4096);
 }
 
-void ReadFileName(){
+// update current title info
+void updateTitleInfo(){
   playerIDX = source.index();
   char* path = (char*)source.toStr();
   char delimiter[] = "/";
@@ -51,15 +51,27 @@ void ReadFileName(){
     ptr = strtok(NULL, delimiter);
   }
   Serial.println(displayName);
-  auto info = decoder.audioInfo();
-  Serial.printf("%d channels, ", info.channels);
-  Serial.printf("%d bits per sample, ", info.bits_per_sample);
-  Serial.printf("sample rate: %d ", info.sample_rate);
+  auto info = decoder.audioInfoEx();
+  Serial.printf("%d bits per sample, ", info.bitsPerSample);
+  Serial.printf("bitrate: %d, ", info.bitrate);
+  Serial.printf("sample rate: %d\n", info.samprate);
+}
+
+// Update current play position
+void updatePosition(){
+  if(millis() - dTimer > 1000){
+    dTimer = millis();
+    byte pPos = source.positionPercent();
+    if(playPos != pPos){
+      playPos = pPos;
+      Serial.printf("%d %%\n", pPos);
+    }
+  }
 }
 
 void blinkLED(){
-  if(ledPin > 0 && millis() - ledTimer > 888){
-    ledTimer = millis();
+  if(ledPin > 0 && millis() - dTimer > 888){
+    dTimer = millis();
     blinker = !blinker;
     if(blinker == true){
       digitalWrite(ledPin,HIGH);
