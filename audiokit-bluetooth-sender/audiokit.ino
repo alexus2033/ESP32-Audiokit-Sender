@@ -1,3 +1,4 @@
+// check if SDCard was inserted
 bool SDCard_Available(){
   int detectSDPin = SD_CARD_INTR_GPIO;
   if(detectSDPin > 0 && digitalRead(detectSDPin) == 0){
@@ -9,6 +10,7 @@ bool SDCard_Available(){
   return false;
 }
 
+// stop or resume the current song
 void btnStopResume(bool, int, void*){
   if (player.isActive()){
     debugln("Player pause");
@@ -18,25 +20,34 @@ void btnStopResume(bool, int, void*){
   } 
 }
 
+// go to the next song
 void btnNext(bool, int, void*) {
   debugln("Player next");
   player.next();
 }
 
+// go to the previous song
 void btnPrevious(bool, int, void*) {
   if(!bt_connected) return;
   debugln("Player prev");
   player.previous();
 }
 
+// skip forward inside a song
 void btnForward(bool, int, void*) {
-  debugln("Skip+");
+  debug(" + ");
   source.seek(4096);
 }
 
+// skip back inside a song
 void btnRewind(bool, int, void*) {
-  debugln("Skip-");
-  source.seek(-4096);
+  debug(" - ");
+  if (player.isActive()){ 
+    //go faster against a running engine
+    source.seek(-16384);
+  } else {
+    source.seek(-4096);
+  }
 }
 
 // update current title info
@@ -69,6 +80,7 @@ void updatePosition(){
   }
 }
 
+// blink the board led
 void blinkLED(){
   if(ledPin > 0 && millis() - dTimer > 888){
     dTimer = millis();
